@@ -37,40 +37,49 @@
   const intro = document.getElementById('intro');
   const introSkip = document.getElementById('intro-skip');
   const replay = document.getElementById('intro-replay');
-  let introTimer, closeTimer;
+  let introTimer, closeTimer, openingTimer;
   const introBackground = [...document.querySelectorAll('body > .skip-link, body > header, body > main, body > footer')];
   function finishIntro() {
-    intro.classList.remove('is-active', 'is-leaving');
+    clearTimeout(introTimer); clearTimeout(closeTimer); clearTimeout(openingTimer);
+    intro.classList.remove('is-active', 'is-leaving', 'is-opening');
     intro.setAttribute('aria-hidden', 'true');
     document.documentElement.classList.remove('intro-open');
     introBackground.forEach(element => { element.inert = false; });
     if (intro.contains(document.activeElement)) document.querySelector('.brand').focus({ preventScroll: true });
   }
+  function openBook() {
+    if (!intro.classList.contains('is-active') || intro.classList.contains('is-opening')) return;
+    clearTimeout(openingTimer);
+    intro.classList.add('is-opening');
+    startFilm();
+    introTimer = setTimeout(closeIntro, 2500);
+  }
   function closeIntro() {
     if (!intro.classList.contains('is-active') || intro.classList.contains('is-leaving')) return;
+    if (!intro.classList.contains('is-opening')) { openBook(); return; }
     clearTimeout(introTimer);
     intro.classList.add('is-leaving');
     startFilm();
     introSkip.tabIndex = -1;
-    closeTimer = setTimeout(finishIntro, reduced.matches ? 0 : 2250);
+    closeTimer = setTimeout(finishIntro, reduced.matches ? 0 : 900);
   }
   function showIntro() {
-    clearTimeout(closeTimer); clearTimeout(introTimer);
+    clearTimeout(closeTimer); clearTimeout(introTimer); clearTimeout(openingTimer);
     if (reduced.matches) { finishIntro(); return; }
     scrollTo({ top: 0, behavior: 'instant' });
-    intro.classList.remove('is-leaving');
+    intro.classList.remove('is-leaving', 'is-opening');
     intro.classList.add('is-active');
     intro.setAttribute('aria-hidden', 'false');
     document.documentElement.classList.add('intro-open');
     introSkip.tabIndex = 0;
     introBackground.forEach(element => { element.inert = true; });
     introSkip.focus({ preventScroll: true });
-    introTimer = setTimeout(closeIntro, 2200);
+    openingTimer = setTimeout(openBook, 950);
   }
   introSkip.addEventListener('click', closeIntro);
   replay.addEventListener('click', showIntro);
   document.addEventListener('keydown', event => { if (event.key === 'Escape') closeIntro(); });
-  // A deep link opens its destination immediately. The film plays behind the doors.
+  // A deep link opens its destination immediately. The film plays behind the book.
   if (!location.hash && !reduced.matches) showIntro();
 
   const gallery = document.getElementById('perspective-track');
