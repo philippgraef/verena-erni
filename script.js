@@ -156,7 +156,7 @@
   new ResizeObserver(updateGallery).observe(gallery);
   updateGallery();
   document.addEventListener('visibilitychange', () => { if (document.hidden) stopPan(); });
-  reduced.addEventListener('change', () => { stopPan(); if (reduced.matches) closeIntro(); });
+  reduced.addEventListener('change', () => { stopPan(); if (reduced.matches) { clearTimeout(introTimer); clearTimeout(closeTimer); finishIntro(); } });
 
   const legacyTopics = { kommunikation: 'kommunikation', mediation: 'mediation', 'vor-der-kamera': 'kamera', praesenz: 'praesenz' };
   function restorePerspectiveHash() {
